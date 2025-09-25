@@ -1,0 +1,5 @@
+# ignore data files
+data/
+
+# ignore node_modules
+node_modules/

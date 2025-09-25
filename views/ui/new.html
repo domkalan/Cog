@@ -1,0 +1,130 @@
+{% extends "ui/frame.html" %}
+
+{% block content %}
+<div class="content">
+    <div class="container">
+        <a class="btn btn-primary float-end" href="#" id="create-button">Create</a>
+        <h3>Create New Script</h3>
+        <hr/>
+        <div id="editor" style="width: 100%; height: 600px; border: 1px solid grey; margin-bottom: 16px;"></div>
+
+        <form>
+            <div class="input-group mb-3">
+                <label class="input-label">Name</label>
+                <input type="text" class="form-control" placeholder="Example Script" id="script-name">
+            </div>
+            <div class="input-group mb-3">
+                <label class="input-label">Runtime</label>
+                <select class="form-select" aria-label="Default select example" id="script-runtime">
+                    <option selected value="python" disabled>Docker</option>
+                    <option value="nodejs">Node.js</option>
+                    <option value="python" disabled>Python</option>
+                </select>
+            </div>
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" value="" id="script-webhook">
+                <label class="form-check-label" for="script-webhook">Webhook Callable</label>
+            </div>
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" value="" id="script-cron">
+                <label class="form-check-label" for="script-cron">Run via Cron Schedule</label>
+            </div>
+            <div class="script-cron-schedule-block" style="display: none;">
+                <div class="input-group mb-3">
+                    <label class="input-label">Cron Schedule</label>
+                    <input type="text" class="form-control" placeholder="* * * * *" id="script-cron-schedule">
+                </div>
+            </div>
+
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.29.1/min/vs/loader.min.js"></script>
+<script>
+    // Import Monaco Editor
+    require.config({ paths: { "vs": "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.29.1/min/vs/" }});
+
+    window.MonacoEnvironment = {
+        getWorkerUrl: function(workerId, label) {
+            return `data:text/javascript;charset=utf-8,${encodeURIComponent(`
+                self.MonacoEnvironment = { baseUrl: "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.29.1/min/" };
+                importScripts("https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.29.1/min/vs/base/worker/workerMain.min.js");`
+            )}`;
+        }
+    };
+
+    require(["vs/editor/editor.main"], function () {
+        // Create the editor with some sample JavaScript code
+        const editor = monaco.editor.create(document.getElementById("editor"), {
+            value: "// code goes here\n",
+            language: "javascript"
+        });
+
+        // Resize the editor when the window size changes
+        const editorElement = document.getElementById("editor");
+        window.addEventListener("resize", () => editor.layout({
+            height: editorElement.offsetHeight
+        }));
+
+        window.editor = editor;
+    });
+
+    // Get our input elements for gathering input data
+    const scriptNameInput = document.getElementById('script-name');
+    const scriptRuntimeInput = document.getElementById('script-runtime');
+    const scriptWebhookInput = document.getElementById('script-webhook');
+    const scriptCronEnabledInput = document.getElementById('script-cron');
+    const scriptCronSchedule = document.getElementById('script-cron-schedule');
+
+    // Get our schedule box
+    const scriptCronScheduleBlock = document.querySelector('.script-cron-schedule-block');
+
+    scriptCronEnabledInput.addEventListener('change', (e) => {
+        if (scriptCronEnabledInput.checked) {
+            scriptCronScheduleBlock.style.display = 'initial';
+        } else {
+            scriptCronScheduleBlock.style.display = 'none';
+        }
+    });
+
+    // Bind to our save button
+    const saveButton = document.getElementById("create-button");
+    saveButton.addEventListener('click', (e) => {
+        e.preventDefault();
+
+        if (saveButton.classList.contains('disabled')) {
+            return;
+        }
+
+        saveButton.classList.add('disabled');
+
+        fetch('/ui/new', {
+            method: 'POST',
+            headers: {
+                'content-type': 'application/json'
+            },
+            body: JSON.stringify({
+                name: scriptNameInput.value,
+                runtime: scriptRuntimeInput.value,
+                webhook: scriptWebhookInput.checked,
+                cron: scriptCronEnabledInput.checked,
+                cronSchedule: scriptCronSchedule.value,
+                code: window.editor.getValue()
+            })
+        }).then(req => req.json()).then((data) => {
+            if (!data.id) {
+                setTimeout(() => {
+                    saveButton.classList.remove('disabled');
+                }, 750)
+            } else {
+                window.location.href = `/ui/${data.id}`
+            }
+        }).catch((error) => {
+            alert(error);
+        })
+    })
+</script>
+{% endblock %}

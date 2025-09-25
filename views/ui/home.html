@@ -1,0 +1,31 @@
+{% extends "ui/frame.html" %}
+
+{% block content %}
+<div class="content">
+    <div class="container">
+        <a class="btn btn-primary float-end" href="/ui/new">New Script</a>
+        <h3>Scripts</h3>
+        <hr/>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Runtime</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for script in scripts %}
+                <tr>
+                    <td>{{script.id}}</td>
+                    <td>{{script.name}}</td>
+                    <td>{{script.runtime}}</td>
+                    <td><a href="/ui/scripts/{{script.id}}">Edit</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
