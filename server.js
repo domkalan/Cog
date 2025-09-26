@@ -196,7 +196,10 @@ app.get('/ui/scripts/:script', (req, res) => {
     res.render('ui/script.html', { script: {
         id: script.id,
         name: script.name,
-        runtime: script.runtime
+        runtime: script.runtime,
+        webhook: script.webhook,
+        cron: script.cron,
+        cronSchedule: script.cronSchedule
     } });
 });
 

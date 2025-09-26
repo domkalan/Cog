@@ -12,6 +12,25 @@
         <div>id: {{ script.id }} - runtime: {{ script.runtime }}</div>
         <hr/>
         <div id="editor" style="width: 100%; height: 600px; border: 1px solid grey; margin-bottom: 16px;">{{ script.code }}</div>
+        {% if script.webhook %}
+        <div>
+            <h5>Webhooks</h5>
+            <div class="mb-4">
+                <p>Trigger Endpoint</p>
+                <code><b>POST:</b> /api/v1/trigger/{{ script.id }}?var=foo</code>
+            </div>
+            <div class="mb-4">
+                <p>Run Endpoint</p>
+                <code><b>POST:</b> /api/v1/run/{{ script.id }}?var=foo</code>
+            </div>
+        </div>
+        {% endif %}
+        {% if script.cron %}
+        <div>
+            <h5>Cron Schedule</h5>
+            <code>{{ script.cronSchedule }}</code>
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}
