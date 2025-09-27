@@ -54,6 +54,10 @@ const runScript = (cogScriptId, context, message) => {
     // handle runtimes
     if (cogScript.runtime === 'nodejs') {
         spawnedProcess = childProcess.spawn('node', [cogScriptFile, ...context], { stdio: ['pipe', 'pipe', 'pipe'] });
+    } else if (cogScript.runtime === 'python') {
+        spawnedProcess = childProcess.spawn('python3', [cogScriptFile, ...context], { stdio: ['pipe', 'pipe', 'pipe'] });
+    } else if (cogScript.runtime === 'bash') {
+        spawnedProcess = childProcess.spawn('bash', [cogScriptFile, ...context], { stdio: ['pipe', 'pipe', 'pipe'] });
     }
 
     // watch for exit
@@ -166,6 +170,14 @@ app.post('/ui/new', (req, res) => {
         entryFile.entrypoint = 'app.js';
 
         fs.writeFileSync(path.resolve(`./data/scripts/${id}/app.js`), req.body.code);
+    } else if (req.body.runtime === 'python') {
+        entryFile.entrypoint = 'app.py';
+
+        fs.writeFileSync(path.resolve(`./data/scripts/${id}/app.py`), req.body.code);
+    } else if (req.body.runtime === 'bash') {
+        entryFile.entrypoint = 'app.sh';
+
+        fs.writeFileSync(path.resolve(`./data/scripts/${id}/app.sh`), req.body.code);
     }
 
     // write the script entry file
